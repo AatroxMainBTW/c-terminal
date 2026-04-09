@@ -4,21 +4,15 @@
 #include "Dispatcher.h"
 #include "Color.h"
 #include <unordered_set>
+#include "FileSystem.h"
 
 const std::unordered_set<std::string> ERROR_WORDS = { "error", "unknown", "failed" };
-
-enum Command {
-    print,
-    ls,
-    cat,
-    mkdir,
-    unknown
-};
 
 Command getCommand(const std::string& cmd) {
     static std::unordered_map<std::string, Command> map = {
         {"print", print},
         {"ls", ls},
+        {"cd", cd},
         {"cat", cat},
         {"mkdir", mkdir}
     };
@@ -30,16 +24,44 @@ Command getCommand(const std::string& cmd) {
     return unknown;
 }
 
-// How to use 'print "text"'
-// TODO convert .txt or any programming extention to string and print it
-void printFunc(std::vector<std::string> arguments) {
+bool error_zero_arg(std::vector<std::string> arguments) {
     if (arguments.empty()) {
         setColor(RED);
         std::cerr << "[Error] No arguments provided!\n";
         resetColor();
+        return true;
+    }
+    return false;
+}
+
+void error_bad_arg(std::string arg) {
+    setColor(RED);
+    std::cerr << "[Error] Bad argument: ";
+    resetColor();
+
+    setColor(YELLOW);
+    std::cerr << arg << "\n";
+    resetColor();
+}
+
+bool error_too_many_arg(std::vector<std::string> arguments) {
+    if (arguments.size() > 1) {
+        setColor(RED);
+        std::cerr << "[Error] Too many arguments provided!\n";
+        resetColor();
+        return true;
+    }
+    return false;
+}
+
+// How to use 'print "text"'
+// TODO convert .txt or any programming extention to string and print it
+void printFunc(std::vector<std::string> arguments) {
+
+    bool hasZeroArg = error_zero_arg(arguments);
+    if (hasZeroArg) {
         return;
     }
-
     for (std::string arg : arguments) {
         if (arg.front() == '"' && arg.back() == '"') {
             arg.erase(std::remove(arg.begin(), arg.end(), '"'), arg.end());
@@ -49,15 +71,27 @@ void printFunc(std::vector<std::string> arguments) {
             resetColor();
         }
         else {
-            setColor(RED);
-            std::cerr << "[Error] Bad argument: ";
-            resetColor();
-
-            setColor(YELLOW);
-            std::cerr << arg << "\n";
-            resetColor();
+            error_bad_arg(arg);
         }
     }
+}
+
+void NavigateFileSystemFunc(std::vector<std::string> arguments) {
+    bool hasZeroArg = error_zero_arg(arguments);
+    if (hasZeroArg) {
+        return;
+    }
+    bool hasTooManyArg = error_too_many_arg(arguments);
+    if (hasTooManyArg) {
+        return;
+    }
+    std::string arg = arguments[0];
+    if (arg == "..") {
+        goToParentPath();
+    }else {
+        changeFilePath(arg);
+    }
+
 }
 
 void dispatchCommand(std::vector<std::string> tokens) {
@@ -72,6 +106,11 @@ void dispatchCommand(std::vector<std::string> tokens) {
         }
         case ls:
             std::cout << "ls command" << std::endl;
+            break;
+
+        case cd:
+            tokens.erase(tokens.begin());
+            NavigateFileSystemFunc(tokens);
             break;
 
         case cat:
