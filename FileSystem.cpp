@@ -63,29 +63,39 @@ void getFoldersAndDocumentsInCurrentPath() {
     const int COL2 = 40; // filename
     const int COL3 = 20; // file type
 
+    std::vector<std::filesystem::directory_entry> dirs;
+    std::vector<std::filesystem::directory_entry> files;
+
+    // Separate dirs and files first
     for (const auto& entry : std::filesystem::directory_iterator(currentFilePath)) {
-        if (!entry.is_directory()) {
-            if (!docPrinted) std::cout << "[FILES] :" << std::endl;
-            docPrinted = true;
+        if (entry.is_directory())
+            dirs.push_back(entry);
+        else
+            files.push_back(entry);
+    }
+
+    // Print directories
+    if (!dirs.empty()) {
+        std::cout << "[DIRECTORIES] :" << std::endl;
+        for (const auto& entry : dirs) {
+            setColor(BG_COLOR);
+            std::cout << "  "
+                << std::left << std::setw(COL1) << "[DIR]"
+                << std::left << std::setw(COL2) << entry.path().filename().string()
+                << std::left << std::setw(COL3) << file_type_to_string(entry.status().type());
+            resetColor();
+            std::cout << std::endl;
+        }
+    }
+
+    if (!files.empty()) {
+        std::cout << "[FILES] :" << std::endl;
+        for (const auto& entry : files) {
             std::cout << "  "
                 << std::left << std::setw(COL1) << "[FILE]"
                 << std::left << std::setw(COL2) << entry.path().filename().string()
                 << std::left << std::setw(COL3) << file_type_to_string(entry.status().type())
                 << formatSize(entry.file_size()) << std::endl;
         }
-        else {
-            if (!folderPrinted) std::cout << "[DIRECTORIES] :" << std::endl;
-            folderPrinted = true;
-            setColor(BG_COLOR);
-            std::cout << "  "
-                << std::left << std::setw(COL1) << "[DIR]"
-                << std::left << std::setw(COL2) << entry.path().filename().string()
-                << std::left << std::setw(COL3) << file_type_to_string(entry.status().type());
-            resetColor();         
-            std::cout << std::endl;
-        }
     }
-   
-    folderPrinted = false;
-    docPrinted = false;
 }
