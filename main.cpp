@@ -17,5 +17,6 @@ int main()
 
         std::vector<std::string> tokens = parseLine(line);
         dispatchCommand(tokens);
+        resetColor();
     }
 }

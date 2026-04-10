@@ -5,6 +5,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <regex>
+#include <stdlib.h>
 
 enum Command {
     print,
@@ -12,6 +13,7 @@ enum Command {
     cat,
     mkdir,
     cd,
+    clear,
     unknown
 };
 
@@ -20,6 +22,8 @@ void dispatchCommand(std::vector<std::string> tokens);
 void printFunc(std::vector<std::string> tokens);
 
 void NavigateFileSystemFunc(std::vector<std::string> arguments);
+
+void clearScreen();
 
 
 bool error_zero_arg(std::vector<std::string> arguments);

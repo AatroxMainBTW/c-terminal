@@ -14,7 +14,8 @@ Command getCommand(const std::string& cmd) {
         {"ls", ls},
         {"cd", cd},
         {"cat", cat},
-        {"mkdir", mkdir}
+        {"mkdir", mkdir},
+        { "clear", clear }
     };
 
     auto it = map.find(cmd);
@@ -94,6 +95,11 @@ void NavigateFileSystemFunc(std::vector<std::string> arguments) {
 
 }
 
+void clearScreen() {
+    // Calling system function and passing cls as argument
+    system("cls");
+}
+
 void dispatchCommand(std::vector<std::string> tokens) {
     if (tokens.empty()) return;
 
@@ -105,7 +111,7 @@ void dispatchCommand(std::vector<std::string> tokens) {
             break;
         }
         case ls:
-            std::cout << "ls command" << std::endl;
+            getFoldersAndDocumentsInCurrentPath();
             break;
 
         case cd:
@@ -120,7 +126,10 @@ void dispatchCommand(std::vector<std::string> tokens) {
         case mkdir:
             std::cout << "mkdir command" << std::endl;
             break;
-
+        case clear:
+            clearScreen();
+            std::cout << "TERMINAL" << std::endl;
+            break;
         default:
             std::cerr << "Unknown command" << std::endl;
             break;
