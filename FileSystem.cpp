@@ -49,10 +49,18 @@ std::string goToParentPath() {
 
 /* Handle full path as well as navigating in one folder */
 std::string changeFilePath(std::string newPath) {
-	if (std::filesystem::path(newPath).has_relative_path()) {
-		currentFilePath = std::filesystem::path(newPath).string();
-		std::filesystem::current_path(newPath);
-	}	
+    try {
+        std::filesystem::path p(newPath);
+        if (std::filesystem::exists(p)) {
+            currentFilePath = std::filesystem::path(newPath).string();
+            std::filesystem::current_path(newPath);
+        }
+    }
+    catch (const std::filesystem::filesystem_error& e) {
+        setColor(RED);
+        std::cerr << "Invalid path: " << e.what() << '\n';
+    }
+    resetColor();
 	return currentFilePath;
 
 }
@@ -65,7 +73,6 @@ void getFoldersAndDocumentsInCurrentPath() {
 
     std::vector<std::filesystem::directory_entry> dirs;
     std::vector<std::filesystem::directory_entry> files;
-
     // Separate dirs and files first
     for (const auto& entry : std::filesystem::directory_iterator(currentFilePath)) {
         if (entry.is_directory())
@@ -98,4 +105,72 @@ void getFoldersAndDocumentsInCurrentPath() {
                 << formatSize(entry.file_size()) << std::endl;
         }
     }
+}
+
+void createFolder(std::string folderName) {
+    std::string finalPath = currentFilePath + "/" + folderName;
+    std::filesystem::path pathToCreate(finalPath);
+
+    try {
+        if (std::filesystem::exists(pathToCreate)) {
+            setColor(RED);
+            std::cout << "Directory " << folderName << " already exists.\n";
+            resetColor();
+            return;
+        }
+
+        bool isCreated = std::filesystem::create_directories(pathToCreate);
+
+        if (isCreated) {
+            setColor(GREEN);
+            std::cout << "Directory " << folderName << " was created successfully.\n";
+            std::cout << "  path: " << pathToCreate.string() << "\n";
+        }
+        else {
+            setColor(RED);
+            std::cout << "Directory " << folderName << " creation failed.\n";
+        }
+    }
+    catch (const std::filesystem::filesystem_error& e) {
+        setColor(RED);
+        std::cout << "Creation failed: " << e.what() << "\n";
+    }
+
+    resetColor();
+}
+
+
+void removeFolderOrDocument(std::string name) {
+    std::string finalPath = currentFilePath + "/" + name;
+    std::filesystem::path pathToDelete(finalPath);
+
+    try {
+        if (!std::filesystem::exists(pathToDelete)) {
+            setColor(RED);
+            std::cout << name << " does not exist.\n";
+            resetColor();
+            return;
+        }
+
+        if (std::filesystem::is_directory(pathToDelete)) {
+            
+            std::cout << "Deleting contents of: " << name << "\n";
+            for (const auto& entry : std::filesystem::recursive_directory_iterator(pathToDelete)) {
+                setColor(YELLOW);
+                std::cout << "  removing: " << entry.path().filename().string() << "\n";
+                resetColor();
+            }
+        }
+
+        uintmax_t deletedCount = std::filesystem::remove_all(pathToDelete);
+
+        setColor(GREEN);
+        std::cout << name << " was deleted successfully. (" << deletedCount << " items removed)\n";
+    }
+    catch (const std::filesystem::filesystem_error& e) {
+        setColor(RED);
+        std::cout << "Deletion failed: " << e.what() << "\n";
+    }
+
+    resetColor();
 }

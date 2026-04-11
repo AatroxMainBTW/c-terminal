@@ -14,6 +14,7 @@ enum Command {
     mkdir,
     cd,
     clear,
+    rm,
     unknown
 };
 
@@ -25,6 +26,9 @@ void NavigateFileSystemFunc(std::vector<std::string> arguments);
 
 void clearScreen();
 
+void createDirectory(std::vector<std::string> arguments);
+
+void removeDirectoryOrFile(std::vector<std::string> arguments);
 
 bool error_zero_arg(std::vector<std::string> arguments);
 

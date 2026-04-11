@@ -14,3 +14,7 @@ std::string goToParentPath();
 std::string changeFilePath(std::string newPath);
 
 void getFoldersAndDocumentsInCurrentPath();
+
+void createFolder(std::string folderName);
+
+void removeFolderOrDocument(std::string name);

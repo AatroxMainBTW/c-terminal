@@ -15,6 +15,7 @@ Command getCommand(const std::string& cmd) {
         {"cd", cd},
         {"cat", cat},
         {"mkdir", mkdir},
+        {"rm",rm},
         { "clear", clear }
     };
 
@@ -100,6 +101,38 @@ void clearScreen() {
     system("cls");
 }
 
+
+void createDirectory(std::vector<std::string> arguments) {
+
+    bool hasZeroArg = error_zero_arg(arguments);
+    if (hasZeroArg) {
+        return;
+    }
+    bool hasTooManyArg = error_too_many_arg(arguments);
+    if (hasTooManyArg) {
+        return;
+    }
+
+    createFolder(arguments[0]);
+  
+}
+
+
+void removeDirectoryOrFile(std::vector<std::string> arguments) {
+
+    bool hasZeroArg = error_zero_arg(arguments);
+    if (hasZeroArg) {
+        return;
+    }
+    bool hasTooManyArg = error_too_many_arg(arguments);
+    if (hasTooManyArg) {
+        return;
+    }
+
+    removeFolderOrDocument(arguments[0]);
+
+}
+
 void dispatchCommand(std::vector<std::string> tokens) {
     if (tokens.empty()) return;
 
@@ -124,7 +157,12 @@ void dispatchCommand(std::vector<std::string> tokens) {
             break;
 
         case mkdir:
-            std::cout << "mkdir command" << std::endl;
+            tokens.erase(tokens.begin());
+            createDirectory(tokens);
+            break;
+        case rm:
+            tokens.erase(tokens.begin());
+            removeDirectoryOrFile(tokens);
             break;
         case clear:
             clearScreen();
